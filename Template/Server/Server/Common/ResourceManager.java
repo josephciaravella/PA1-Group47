@@ -53,25 +53,29 @@ public class ResourceManager implements IResourceManager
 	protected boolean deleteItem(String key)
 	{
 		Trace.info("RM::deleteItem(" + key + ") called");
-		ReservableItem curObj = (ReservableItem)readData(key);
-		// Check if there is such an item in the storage
-		if (curObj == null)
-		{
-			Trace.warn("RM::deleteItem(" + key + ") failed--item doesn't exist");
-			return false;
-		}
-		else
-		{
-			if (curObj.getReserved() == 0)
+		// Hold the lock across the reserved-count check and the removal so a
+		// concurrent reserveResource can't slip in between them
+		synchronized(m_data) {
+			ReservableItem curObj = (ReservableItem)readData(key);
+			// Check if there is such an item in the storage
+			if (curObj == null)
 			{
-				removeData(curObj.getKey());
-				Trace.info("RM::deleteItem(" + key + ") item deleted");
-				return true;
+				Trace.warn("RM::deleteItem(" + key + ") failed--item doesn't exist");
+				return false;
 			}
 			else
 			{
-				Trace.info("RM::deleteItem(" + key + ") item can't be deleted because some customers have reserved it");
-				return false;
+				if (curObj.getReserved() == 0)
+				{
+					removeData(curObj.getKey());
+					Trace.info("RM::deleteItem(" + key + ") item deleted");
+					return true;
+				}
+				else
+				{
+					Trace.info("RM::deleteItem(" + key + ") item can't be deleted because some customers have reserved it");
+					return false;
+				}
 			}
 		}
 	}
@@ -141,6 +145,50 @@ public class ResourceManager implements IResourceManager
 			Trace.info("RM::reserveItem(" + customerID + ", " + key + ", " + location + ") succeeded");
 			return true;
 		}        
+	}
+
+	// Take one unit of an item on behalf of a customer stored elsewhere (the Middleware)
+	// Returns the price of the unit, or -1 if the item doesn't exist or is sold out
+	public int reserveResource(String key) throws RemoteException
+	{
+		Trace.info("RM::reserveResource(" + key + ") called");
+		synchronized(m_data) {
+			ReservableItem item = (ReservableItem)readData(key);
+			if (item == null)
+			{
+				Trace.warn("RM::reserveResource(" + key + ") failed--item doesn't exist");
+				return -1;
+			}
+			if (item.getCount() == 0)
+			{
+				Trace.warn("RM::reserveResource(" + key + ") failed--No more items");
+				return -1;
+			}
+			item.setCount(item.getCount() - 1);
+			item.setReserved(item.getReserved() + 1);
+			writeData(item.getKey(), item);
+			Trace.info("RM::reserveResource(" + key + ") succeeded, price=$" + item.getPrice());
+			return item.getPrice();
+		}
+	}
+
+	// Give back count units of an item (customer deleted, or bundle rolled back)
+	public boolean unreserveResource(String key, int count) throws RemoteException
+	{
+		Trace.info("RM::unreserveResource(" + key + ", " + count + ") called");
+		synchronized(m_data) {
+			ReservableItem item = (ReservableItem)readData(key);
+			if (item == null)
+			{
+				Trace.warn("RM::unreserveResource(" + key + ", " + count + ") failed--item doesn't exist");
+				return false;
+			}
+			item.setReserved(item.getReserved() - count);
+			item.setCount(item.getCount() + count);
+			writeData(item.getKey(), item);
+			Trace.info("RM::unreserveResource(" + key + ", " + count + ") succeeded");
+			return true;
+		}
 	}
 
 	// Create a new flight, or add seats to existing flight

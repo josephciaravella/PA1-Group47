@@ -16,10 +16,13 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-public class RMIResourceManager extends ResourceManager 
+// Declares IResourceManagerInternal here (not on ResourceManager) so that only the
+// per-type RMs expose reserveResource/unreserveResource remotely -- the Middleware
+// also extends ResourceManager, and its stub must only implement IResourceManager,
+// the one interface the client has on its classpath.
+public class RMIResourceManager extends ResourceManager implements IResourceManagerInternal
 {
 	private static String s_serverName = "Server";
-	//TODO: ADD YOUR GROUP NUMBER TO COMPLETE
 	private static String s_rmiPrefix = "group_47_";
 
 	public static void main(String args[])
