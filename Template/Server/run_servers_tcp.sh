@@ -2,7 +2,7 @@
 
 # TODO: SPECIFY THE HOSTNAMES OF 4 CS MACHINES (tr-open-01, tr-open-02, etc...)
 # For local testing, you can leave it empty or use: MACHINES=(localhost localhost localhost localhost)
-MACHINES=( "tr-open-01", "tr-open-02", "tr-open-03", "tr-open-04" )
+MACHINES=( "tr-open-01" "tr-open-02" "tr-open-03" "tr-open-04" )
 
 PORT_FLIGHTS=50001
 PORT_CARS=50002
