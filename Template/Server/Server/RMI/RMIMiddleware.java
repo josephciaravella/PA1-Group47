@@ -19,7 +19,7 @@ public class RMIMiddleware extends ResourceManager
 {
 	private static String s_serverName = "Middleware";
 	private static String s_rmiPrefix = "group_47_";
-	private static int s_serverPort = 1099;
+	private static int s_serverPort = 3047;
 
 	private IResourceManagerInternal m_flightsRM;
 	private IResourceManagerInternal m_carsRM;
