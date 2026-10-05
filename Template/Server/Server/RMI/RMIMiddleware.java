@@ -1,4 +1,4 @@
-/ -------------------------------
+// -------------------------------
 // COMP 512 - Programming Assignment 1
 // RMI Middleware
 //
@@ -39,9 +39,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class RMIMiddleware implements IResourceManager
 {
         // TODO: ADD YOUR GROUP NUMBER TO COMPLETE (must match the RMs and the client)
-        private static final String RMI_PREFIX = "group_xx_";
+        private static final String RMI_PREFIX = "group_47_";
         private static final String MIDDLEWARE_NAME = "Middleware";
-        private static int s_port = 1099;
+        private static int s_port = 1047;
 
         private final String m_name;
         private IResourceManager m_flights;
